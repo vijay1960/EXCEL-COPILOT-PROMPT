@@ -1,0 +1,40 @@
+Excel Copilot formula prompt reference with examples by category
+Data Analysis
+Pivot Table
+Pivot Chart
+Filter / FILTER()
+XLOOKUP
+Sorting
+Text Formulas
+Date & Time
+Logical / IF
+Statistical
+Statistical
+
+Advanced statistical formulas for frequency, percentile, standard deviation, and distribution analysis.
+
+💡 Prompt tip: Mention what population or range you're analysing and what statistic you need.
+Copy
+Percentile rank
+Find the 90th percentile value for the Response Time column.
+→ Generates: =PERCENTILE(C2:C100,0.9)
+Copy
+Frequency distribution
+Count how many values in Scores fall into each of these bins: 0–25, 26–50, 51–75, 76–100.
+→ Generates: =FREQUENCY(A2:A100,{25,50,75,100})
+Copy
+Standard deviation
+Calculate the standard deviation of Daily Sales to understand variability.
+→ Generates: =STDEV(B2:B100)
+Copy
+Median vs average
+Show both the median and average Salary side by side to identify skew.
+→ Median: =MEDIAN(B:B) | Mean: =AVERAGE(B:B)
+Copy
+Moving average
+Calculate a 7-day rolling average of Website Traffic for trend smoothing.
+→ Generates: =AVERAGE(OFFSET(B2,-6,0,7,1))
+Copy
+Correlation
+Find the correlation between Ad Spend and Revenue to see if they're related.
+→ Generates: =CORREL(B2:B100,C2:C100)

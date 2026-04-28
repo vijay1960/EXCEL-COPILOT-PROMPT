@@ -1,0 +1,145 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:1rem 0}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem}
+.tab{padding:6px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);font-size:12px;font-weight:500;cursor:pointer;color:var(--color-text-secondary);transition:all .15s}
+.tab:hover{background:var(--color-background-secondary)}
+.tab.active{background:#185FA5;border-color:#185FA5;color:#fff}
+.section{display:none}
+.section.active{display:block}
+.cat-title{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.cat-desc{font-size:13px;color:var(--color-text-secondary);margin-bottom:14px;line-height:1.5}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.cards{grid-template-columns:1fr}}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;position:relative}
+.card-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#185FA5;margin-bottom:6px}
+.card-prompt{font-size:13px;color:var(--color-text-primary);line-height:1.55;margin-bottom:10px}
+.card-prompt em{font-style:italic;color:var(--color-text-secondary)}
+.card-note{font-size:11.5px;color:var(--color-text-secondary);line-height:1.5;border-top:0.5px solid var(--color-border-tertiary);padding-top:8px;margin-top:2px}
+.copy-btn{position:absolute;top:12px;right:12px;font-size:11px;padding:3px 9px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);color:var(--color-text-secondary);cursor:pointer}
+.copy-btn:hover{background:var(--color-background-tertiary)}
+.tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;margin-right:4px;margin-top:4px;background:#E6F1FB;color:#0C447C}
+.tip-box{background:var(--color-background-secondary);border-left:3px solid #185FA5;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;padding:10px 14px;margin-bottom:16px;font-size:12.5px;color:var(--color-text-secondary);line-height:1.55}
+</style>
+<div class="wrap">
+<h2 class="sr-only">Excel Copilot formula prompt reference with examples by category</h2>
+<div class="tabs" id="tabs"></div>
+<div id="sections"></div>
+</div>
+<script>
+const cats=[
+{id:"data",label:"Data Analysis",icon:"",desc:"Prompts for summarising, aggregating, and analysing raw data using formulas like SUMIF, COUNTIF, AVERAGEIF, and AGGREGATE.",tip:"Include the column/field name and condition clearly. Copilot works best when you mention what column to analyse and what condition to apply.",cards:[
+{label:"Sum with condition",prompt:'Add a formula to sum all values in column <em>Revenue</em> where <em>Region</em> is "North".',note:"→ Generates: =SUMIF(B:B,\"North\",C:C)"},
+{label:"Count unique entries",prompt:'Count the number of unique values in the <em>Product</em> column and show the result in cell F2.',note:"→ Generates: =SUMPRODUCT(1/COUNTIF(A2:A100,A2:A100))"},
+{label:"Conditional average",prompt:'Calculate the average <em>Sales</em> for the month of <em>March</em> only, based on the <em>Month</em> column.',note:"→ Generates: =AVERAGEIF(D:D,\"March\",E:E)"},
+{label:"Multi-condition sum",prompt:'Sum the <em>Profit</em> column where <em>Region</em> is "East" AND <em>Category</em> is "Electronics".',note:"→ Generates: =SUMIFS(F:F,B:B,\"East\",C:C,\"Electronics\")"},
+{label:"Running total",prompt:'Add a running total column next to <em>Sales</em> that accumulates from row 2 downward.',note:"→ Generates: =SUM($C$2:C2)"},
+{label:"Percentage of total",prompt:'Show each <em>Department</em> sales as a percentage of the grand total in column D.',note:"→ Generates: =C2/SUM($C$2:$C$100)"},
+]},
+{id:"pivot",label:"Pivot Table",icon:"",desc:"Use natural language to create, update, or describe pivot tables. Copilot can generate pivot tables with specific rows, columns, values, and filters.",tip:"Specify: what rows you want, what columns, what value to summarise, and any filters.",cards:[
+{label:"Basic pivot",prompt:'Create a Pivot Table showing total <em>Sales</em> by <em>Region</em> and <em>Product Category</em>.',note:"→ Rows: Region | Values: Sum of Sales | Filter: Category"},
+{label:"Pivot with filter",prompt:'Build a Pivot Table for <em>Q4 only</em>, grouping data by <em>Salesperson</em> and showing average <em>Deal Size</em>.',note:"→ Rows: Salesperson | Values: Avg Deal Size | Filter: Q4"},
+{label:"Monthly summary",prompt:'Create a Pivot Table that breaks down <em>Revenue</em> by month and shows both sum and count of orders.',note:"→ Values: Sum + Count of Revenue | Rows: Month"},
+{label:"Top performers",prompt:'Generate a Pivot Table ranking <em>Sales Reps</em> by total <em>Revenue</em> from highest to lowest.',note:"→ Rows: Sales Rep | Values: Sum of Revenue | Sorted Desc"},
+{label:"Two-level grouping",prompt:'Create a Pivot Table grouped first by <em>Country</em>, then by <em>City</em>, showing total <em>Units Sold</em>.',note:"→ Rows: Country > City | Values: Sum of Units Sold"},
+{label:"Percentage pivot",prompt:'Show each product\'s <em>Revenue</em> as a % of Grand Total in the Pivot Table.',note:"→ Show Values As: % of Grand Total"},
+]},
+{id:"pchart",label:"Pivot Chart",icon:"",desc:"Prompts for generating visual charts directly from pivot data. Copilot can suggest and insert charts linked to pivot tables.",tip:"Mention the chart type and the axis data clearly for best results.",cards:[
+{label:"Bar chart from pivot",prompt:'Insert a clustered bar chart from the Pivot Table showing <em>Sales by Region</em>.',note:"→ Chart Type: Clustered Bar | Source: Pivot Table"},
+{label:"Line trend chart",prompt:'Create a line chart showing monthly <em>Revenue trends</em> over the past 12 months from the pivot data.',note:"→ X-Axis: Month | Y-Axis: Revenue | Type: Line"},
+{label:"Pie chart breakdown",prompt:'Generate a pie chart showing the <em>share of total sales</em> by Product Category.',note:"→ Chart Type: Pie | Legend: Product Category"},
+{label:"Combo chart",prompt:'Create a combo chart with <em>Revenue</em> as bars and <em>Profit Margin %</em> as a line on a secondary axis.',note:"→ Primary: Bar (Revenue) | Secondary: Line (Margin %)"},
+{label:"Top-N chart",prompt:'Show a bar chart of the <em>top 10 customers</em> by Revenue, sorted descending.',note:"→ Filters: Top 10 | Sort: Desc | Chart: Horizontal Bar"},
+{label:"Stacked area chart",prompt:'Create a stacked area chart showing <em>Sales by Product</em> month over month for 2024.',note:"→ Type: Stacked Area | X: Month | Series: Products"},
+]},
+{id:"filter",label:"Filter / FILTER()",icon:"",desc:"Dynamic filter formulas that return filtered arrays without changing the original data. Works with FILTER(), SORT(), and UNIQUE() functions.",tip:"Tell Copilot the source range, the column to filter on, and the condition value.",cards:[
+{label:"Single condition filter",prompt:'Filter the table to show only rows where <em>Status</em> is "Active" and spill results starting at H2.',note:"→ Generates: =FILTER(A2:F100,D2:D100=\"Active\")"},
+{label:"Multi-condition filter",prompt:'Return rows where <em>Region</em> is "West" AND <em>Sales</em> are greater than 5000.',note:"→ Generates: =FILTER(A2:F100,(B:B=\"West\")*(C:C>5000))"},
+{label:"OR condition filter",prompt:'Filter records where <em>Category</em> is either "Hardware" or "Software".',note:"→ Generates: =FILTER(A2:E100,(C2:C100=\"Hardware\")+(C2:C100=\"Software\"))"},
+{label:"Date range filter",prompt:'Show all transactions where the <em>Date</em> column falls between 1-Jan-2024 and 31-Mar-2024.',note:"→ Generates: =FILTER(A2:F100,(E:E>=DATE(2024,1,1))*(E:E<=DATE(2024,3,31)))"},
+{label:"Top N filter",prompt:'Extract the top 5 rows by <em>Revenue</em> and display them in a separate area.',note:"→ Generates: =TAKE(SORT(A2:F100,3,-1),5)"},
+{label:"Non-blank filter",prompt:'Filter out all rows where the <em>Email</em> column is empty or blank.',note:"→ Generates: =FILTER(A2:F100,D2:D100<>\"\")"},
+]},
+{id:"xlookup",label:"XLOOKUP",icon:"",desc:"Modern replacement for VLOOKUP/HLOOKUP. More flexible, supports exact/approximate matches, wildcards, and two-way lookups.",tip:"State: what you're looking up, in which column, and what value to return. Mention if you need a default for no-match.",cards:[
+{label:"Basic lookup",prompt:'Look up <em>Employee ID</em> in column A and return their <em>Department</em> from column D.',note:"→ Generates: =XLOOKUP(A2,EmployeeID_col,Dept_col)"},
+{label:"Default on no match",prompt:'Find the <em>Product Price</em> based on Product Code; if not found, return "Not Listed".',note:"→ Generates: =XLOOKUP(A2,B:B,C:C,\"Not Listed\")"},
+{label:"Reverse lookup",prompt:'Search for a <em>Customer Name</em> starting from the last row and return the most recent order date.',note:"→ Generates: =XLOOKUP(A2,B:B,C:C,,-1,-1)"},
+{label:"Wildcard match",prompt:'Find any customer whose name <em>starts with "Smith"</em> and return their account number.',note:"→ Generates: =XLOOKUP(\"Smith*\",A:A,B:B,,2)"},
+{label:"Two-way lookup",prompt:'Return the value at the intersection of a given <em>Product</em> row and <em>Month</em> column in a matrix table.',note:"→ Generates: =XLOOKUP(H1,A:A,XLOOKUP(H2,B1:G1,B2:G100))"},
+{label:"Multiple return columns",prompt:'Look up an <em>Order ID</em> and return the customer name, date, and total all at once.',note:"→ Generates: =XLOOKUP(A2,B:B,C:E)  — spills 3 columns"},
+]},
+{id:"sort",label:"Sorting",icon:"",desc:"Dynamic sort formulas using SORT() and SORTBY() that auto-update when data changes — no manual re-sorting needed.",tip:"Specify the column index to sort by and whether ascending (1) or descending (-1). Use SORTBY for multiple columns.",cards:[
+{label:"Single column sort",prompt:'Sort the entire table by the <em>Sales</em> column from highest to lowest.',note:"→ Generates: =SORT(A2:E100,3,-1)"},
+{label:"Alphabetical sort",prompt:'Sort the <em>Customer Name</em> list alphabetically A to Z.',note:"→ Generates: =SORT(A2:A100,1,1)"},
+{label:"Multi-column sort",prompt:'Sort first by <em>Region</em> A–Z, then by <em>Revenue</em> highest to lowest.',note:"→ Generates: =SORTBY(A2:F100,B2:B100,1,C2:C100,-1)"},
+{label:"Sort filtered results",prompt:'Filter rows where Status is "Pending" and sort them by <em>Due Date</em> ascending.',note:"→ Generates: =SORT(FILTER(A2:F100,D:D=\"Pending\"),5,1)"},
+{label:"Rank without sorting",prompt:'Add a rank column showing each row\'s <em>Revenue rank</em> without reordering the table.',note:"→ Generates: =RANK(C2,$C$2:$C$100,0)"},
+{label:"Dynamic top list",prompt:'Show a live-updated list of the top 10 <em>Products</em> by Units Sold.',note:"→ Generates: =TAKE(SORTBY(A2:B100,B2:B100,-1),10)"},
+]},
+{id:"text",label:"Text Formulas",icon:"",desc:"Manipulate, clean, extract, and combine text values. Includes TEXTJOIN, TEXTSPLIT, LEFT/MID/RIGHT, PROPER, and more.",tip:"Describe what part of the text you want and any delimiter used.",cards:[
+{label:"Combine columns",prompt:'Combine the <em>First Name</em> and <em>Last Name</em> columns into one full name with a space between.',note:"→ Generates: =TEXTJOIN(\" \",TRUE,A2,B2)"},
+{label:"Extract domain",prompt:'Extract the <em>domain name</em> from email addresses in column C (the part after @).',note:"→ Generates: =MID(C2,FIND(\"@\",C2)+1,100)"},
+{label:"Split text",prompt:'Split the <em>Full Address</em> column into separate City, State, and ZIP columns using comma as delimiter.',note:"→ Generates: =TEXTSPLIT(A2,\",\")  — spills across columns"},
+{label:"Clean & trim",prompt:'Remove extra spaces and fix capitalisation in the <em>Company Name</em> column.',note:"→ Generates: =PROPER(TRIM(A2))"},
+{label:"Find & replace check",prompt:'Check if the word "Urgent" appears anywhere in the <em>Notes</em> column and return TRUE/FALSE.',note:"→ Generates: =ISNUMBER(SEARCH(\"Urgent\",D2))"},
+{label:"Pad with zeros",prompt:'Format the <em>Order ID</em> column so every number is exactly 6 digits, padded with leading zeros.',note:"→ Generates: =TEXT(A2,\"000000\")"},
+]},
+{id:"date",label:"Date & Time",icon:"",desc:"Calculate durations, extract date parts, find working days, and perform date-based logic with EDATE, NETWORKDAYS, DATEDIF, and more.",tip:"Mention the start and end columns and what unit you want (days, months, years, working days).",cards:[
+{label:"Days between dates",prompt:'Calculate the number of days between the <em>Start Date</em> and <em>End Date</em> columns.',note:"→ Generates: =DATEDIF(A2,B2,\"D\")  or =B2-A2"},
+{label:"Working days",prompt:'Find the number of <em>working days</em> between Order Date and Delivery Date, excluding weekends.',note:"→ Generates: =NETWORKDAYS(A2,B2)"},
+{label:"Add months",prompt:'Add 3 months to the <em>Contract Start Date</em> to get the renewal date.',note:"→ Generates: =EDATE(A2,3)"},
+{label:"Extract year/month",prompt:'Extract the <em>Year</em> and <em>Month</em> from the Invoice Date column into separate columns.',note:"→ Year: =YEAR(A2)  | Month: =TEXT(A2,\"MMM\")"},
+{label:"Age calculation",prompt:'Calculate each employee\'s current <em>age in years</em> based on their Date of Birth column.',note:"→ Generates: =DATEDIF(A2,TODAY(),\"Y\")"},
+{label:"Days until deadline",prompt:'Show how many days remain until the <em>Deadline</em> date; show negative if overdue.',note:"→ Generates: =B2-TODAY()  with conditional formatting"},
+]},
+{id:"logical",label:"Logical / IF",icon:"",desc:"Build conditional logic with IF, IFS, SWITCH, AND, OR, and nested conditions for status flags, grading, and tiered calculations.",tip:"Describe the conditions and what to show for each outcome clearly.",cards:[
+{label:"Simple status flag",prompt:'Add a Status column: show "Overdue" if <em>Due Date</em> is before today, otherwise show "On Track".',note:"→ Generates: =IF(B2<TODAY(),\"Overdue\",\"On Track\")"},
+{label:"Multiple conditions",prompt:'Grade each student: 90+ = "A", 80–89 = "B", 70–79 = "C", below 70 = "Fail".',note:"→ Generates: =IFS(A2>=90,\"A\",A2>=80,\"B\",A2>=70,\"C\",TRUE,\"Fail\")"},
+{label:"SWITCH lookup",prompt:'Map <em>Status Codes</em> 1, 2, 3 to "New", "In Progress", "Closed" respectively.',note:"→ Generates: =SWITCH(A2,1,\"New\",2,\"In Progress\",3,\"Closed\")"},
+{label:"AND condition",prompt:'Flag a row as "High Risk" only if <em>Amount</em> > 10000 AND <em>Days Overdue</em> > 30.',note:"→ Generates: =IF(AND(C2>10000,D2>30),\"High Risk\",\"\")"},
+{label:"Nested IF with OR",prompt:'Mark a transaction as "Review" if it\'s over $5000 OR from an <em>Unknown</em> source.',note:"→ Generates: =IF(OR(C2>5000,B2=\"Unknown\"),\"Review\",\"OK\")"},
+{label:"Error handling",prompt:'Return the result of dividing <em>Profit</em> by <em>Sales</em>, but show 0 if Sales is blank or zero.',note:"→ Generates: =IFERROR(C2/B2,0)"},
+]},
+{id:"stat",label:"Statistical",icon:"",desc:"Advanced statistical formulas for frequency, percentile, standard deviation, and distribution analysis.",tip:"Mention what population or range you're analysing and what statistic you need.",cards:[
+{label:"Percentile rank",prompt:'Find the 90th percentile value for the <em>Response Time</em> column.',note:"→ Generates: =PERCENTILE(C2:C100,0.9)"},
+{label:"Frequency distribution",prompt:'Count how many values in <em>Scores</em> fall into each of these bins: 0–25, 26–50, 51–75, 76–100.',note:"→ Generates: =FREQUENCY(A2:A100,{25,50,75,100})"},
+{label:"Standard deviation",prompt:'Calculate the standard deviation of <em>Daily Sales</em> to understand variability.',note:"→ Generates: =STDEV(B2:B100)"},
+{label:"Median vs average",prompt:'Show both the median and average <em>Salary</em> side by side to identify skew.',note:"→ Median: =MEDIAN(B:B) | Mean: =AVERAGE(B:B)"},
+{label:"Moving average",prompt:'Calculate a 7-day rolling average of <em>Website Traffic</em> for trend smoothing.',note:"→ Generates: =AVERAGE(OFFSET(B2,-6,0,7,1))"},
+{label:"Correlation",prompt:'Find the correlation between <em>Ad Spend</em> and <em>Revenue</em> to see if they\'re related.',note:"→ Generates: =CORREL(B2:B100,C2:C100)"},
+]},
+];
+
+const tabs=document.getElementById('tabs');
+const secs=document.getElementById('sections');
+
+cats.forEach((cat,i)=>{
+  const t=document.createElement('button');
+  t.className='tab'+(i===0?' active':'');
+  t.textContent=cat.label;
+  t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('sec-'+cat.id).classList.add('active');
+  };
+  tabs.appendChild(t);
+
+  const sec=document.createElement('div');
+  sec.className='section'+(i===0?' active':'');
+  sec.id='sec-'+cat.id;
+
+  sec.innerHTML=`<p class="cat-title">${cat.label}</p><p class="cat-desc">${cat.desc}</p><div class="tip-box">💡 <strong>Prompt tip:</strong> ${cat.tip}</div><div class="cards">${cat.cards.map(c=>`<div class="card"><button class="copy-btn" onclick="copyPrompt(this)">Copy</button><div class="card-label">${c.label}</div><div class="card-prompt">${c.prompt}</div><div class="card-note">${c.note}</div></div>`).join('')}</div>`;
+  secs.appendChild(sec);
+});
+
+function copyPrompt(btn){
+  const raw=btn.parentElement.querySelector('.card-prompt').innerText;
+  navigator.clipboard.writeText(raw).then(()=>{
+    btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent='Copy',1500);
+  });
+}
+</script>
